@@ -1,0 +1,5 @@
+gluoncv
+mxnet
+numpy
+torch
+torchvision

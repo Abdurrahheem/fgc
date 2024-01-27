@@ -160,10 +160,7 @@ net.cast('float16')
 
 ft_params = '../model/params_imagenet_dbt/dbt_imagenet.params'
 net.load_parameters(ft_params, ctx=context, allow_missing=True,  ignore_extra=True)
-classes = 200 
-
-
-
+classes = 200
 
 with net.name_scope():
     newoutput = nn.HybridSequential(prefix='')
@@ -174,7 +171,8 @@ net.collect_params().reset_ctx(context)
 net.hybridize()
 
 net.cast(opt.dtype)
-if opt.resume_params is not '':
+# if opt.resume_params is not '':
+if opt.resume_params != '':
     net.load_parameters(opt.resume_params, ctx = context)
 
 # Two functions for reading data from record file or raw images
@@ -336,7 +334,8 @@ def test(ctx, val_data):
 def train(ctx):
     if isinstance(ctx, mx.Context):
         ctx = [ctx]
-    if opt.resume_params is '':
+    # if opt.resume_params is '':
+    if opt.resume_params == '':
         net.initialize(mx.init.MSRAPrelu(), ctx=ctx)
 
     if opt.no_wd:
@@ -345,7 +344,8 @@ def train(ctx):
 
     trainer = gluon.Trainer(net.collect_params(), optimizer, optimizer_params)
 #    trainer1 = gluon.Trainer(net.collect_params(), optimizer, optimizer_params)
-    if opt.resume_states is not '':
+    # if opt.resume_states is not '':
+    if opt.resume_states != '':
         trainer.load_states(opt.resume_states)
 
     if opt.label_smoothing or opt.mixup:
@@ -387,7 +387,7 @@ def train(ctx):
                 outputs = [tmp[0] for tmp in myoutputs]
                 regs = [tmp[1] for tmp in myoutputs]
                 regs_ = [tmp[1]*0 for tmp in myoutputs]
-     
+
                 loss = [L(yhat, y.astype(opt.dtype, copy=False)) + 0.00001*L2(reg, reg_.astype(opt.dtype, copy=False)) for yhat, y, reg, reg_ in zip(outputs, label, regs, regs_)]
             for l in loss:
                 l.backward()
